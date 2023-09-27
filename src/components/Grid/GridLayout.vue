@@ -649,6 +649,10 @@
     eventBus.emit(`setMaxRows`, val);
   });
 
+  const margin = toRef(props, 'margin');
+
+  provide('layoutMargin', margin);
+
   watch(() => props.margin, () => {
     updateHeight();
   });
@@ -675,6 +679,7 @@
     }
     return `${props.rowHeight + 10}px`;
   });
+
 </script>
 
 <style lang="scss" scoped>

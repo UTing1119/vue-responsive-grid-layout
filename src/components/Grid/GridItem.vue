@@ -23,7 +23,7 @@
 </template>
 <script lang="ts">
   import {
-    ref, inject, computed, watch, onBeforeUnmount, onMounted, useSlots, defineComponent,
+    ref, inject, computed, watch, onBeforeUnmount, onMounted, useSlots, defineComponent, provide, Ref,
   } from 'vue';
 
   export default defineComponent({
@@ -48,7 +48,7 @@
   import { IGridLayoutProps } from './grid-layout-props.interface';
   import { ILayoutData } from '@/core/interfaces/layout-data.interface';
   import { EGridItemEvent } from '@/core/enums/EGridItemEvents';
-  import { ICalcWh, ICalcXy, IGridItemPosition, IGridItemWidthHeight, } from '@/core/interfaces/grid-item.interfaces';
+  import { ICalcWh, ICalcXy, IGridItemPosition, IGridItemWidthHeight } from '@/core/interfaces/grid-item.interfaces';
   import { IEventsData } from '@/core/interfaces/eventBus.interfaces';
   import { TBreakpoints } from '@/components/Grid/layout-definition';
 
@@ -84,7 +84,6 @@
   // for parent's instance
   type TIns = (IGridLayoutProps & ILayoutData) | undefined
   const thisLayout = proxy?.$parent as TIns;
-
   // eventBus
   const eventBus = inject(`eventBus`) as Emitter<{
     changeDirection: boolean;
@@ -910,7 +909,9 @@
     tryMakeResizable();
   });
 
-  watch(() => thisLayout?.margin, newMargin => {
+  const layoutMargin = inject<Ref<[number, number]>>('layoutMargin');
+
+  watch(() => layoutMargin?.value, newMargin => {
     if(!newMargin || (newMargin[0] === margin.value[0] && newMargin[1] === margin.value[1])) {
       return;
     }
@@ -1006,6 +1007,7 @@
     rowHeight.value = thisLayout?.rowHeight as number;
     containerWidth.value = thisLayout?.width !== null ? (thisLayout?.width as number) : 100;
     margin.value = thisLayout?.margin !== undefined ? thisLayout.margin : [10, 10];
+
     maxRows.value = thisLayout?.maxRows as number;
 
     if(props.isDraggable === null) {

@@ -11,12 +11,12 @@
             <input id="colNum" v-model="colNum" type="number"/>
             <label for="maxRows">Max Rows</label>
             <input id="maxRows" v-model="maxRows" type="number"/>
-            <label class="hide" for="mtb">Margin Top / Bottom</label>
-            <input id="mtb" v-model="marginTopBottom" class="hide" type="number"/>
-            <label class="hide" for="mlr">Margin Left / Right</label>
-            <input id="mlr" v-model="marginLeftRight" class="hide" type="number"/>
+            <label  for="mtb">Margin Top / Bottom</label>
+            <input id="mtb" v-model="marginTopBottom" type="number"/>
+            <label  for="mlr">Margin Left / Right</label>
+            <input id="mlr" v-model="marginLeftRight" type="number"/>
             <label class="hide" for="borderRadius">Border Radius</label>
-            <input id="borderRadius" v-model="borderRadiusPx" class="hide" type="number"/>
+            <input id="borderRadius" v-model="borderRadiusPx" type="number"/>
             <label for="hideEventLog">Hide Event Log</label>
             <input id="hideEventLog" v-model="hideEventLog" type="checkbox">
             <br/>
@@ -194,7 +194,7 @@
 
   const autoResizeGridLayout = ref(true);
   const borderRadiusPx = ref(8);
-  const colNum = ref(12);
+  const colNum = ref(6);
   const distributeEvenly = ref(true);
   const enableEditMode = ref(true);
   const horizontalShift = ref(true);
@@ -203,12 +203,12 @@
   const isMirrored = ref(false);
   const isResizable = ref(true);
   const isResponsive = ref(true);
-  const marginLeftRight = ref(10); // TODO Not working as expected
-  const marginTopBottom = ref(10); // TODO Not working as expected
+  const marginLeftRight = ref(10);
+  const marginTopBottom = ref(10);
   const maxRows = ref(40);
   const preserveAspectRatio = ref(false);
   const preventCollision = ref(false);
-  const rowHeight = ref(50);
+  const rowHeight = ref(80);
   // const rowHeightPx = ref(rowHeight.value + marginTopBottom.value + 'px');
   const restoreOnDrag = ref(false);
   const showCloseButton = ref(false);
