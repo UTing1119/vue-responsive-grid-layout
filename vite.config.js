@@ -34,7 +34,7 @@ export default defineConfig({
     },
   },
   server: {
-    open: true,
+    open: false,
     port: 9000,
   },
 });

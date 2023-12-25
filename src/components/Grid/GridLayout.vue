@@ -20,19 +20,20 @@
   </div>
 </template>
 <script lang="ts">
-  import {
-    ref,
-    onMounted,
-    onBeforeUnmount,
-    provide,
-    onBeforeMount,
-    nextTick,
-    watch, computed,
-    defineComponent,
-    toRef,
-  } from 'vue';
+import {
+  computed,
+  defineComponent,
+  nextTick,
+  onBeforeMount,
+  onBeforeUnmount,
+  onMounted,
+  provide,
+  ref,
+  toRef,
+  watch,
+} from 'vue';
 
-  export default defineComponent({
+export default defineComponent({
     name: `GridLayout`,
   });
 
@@ -61,9 +62,9 @@
   } from '@/core/helpers/responsiveUtils';
   import { addWindowEventListener, removeWindowEventListener } from '@/core/helpers/DOM';
   import { EGridLayoutEvent } from '@/core/enums/EGridLayoutEvents';
-  import { IBreakpoints, IColumns } from './grid-layout-props.interface';
+  import {IBreakpoints, IColumns, IGridLayoutProps} from './grid-layout-props.interface';
   import { IEventsData } from '@/core/interfaces/eventBus.interfaces';
-  import { EDragEvent } from '@/core/enums/EDragEvents';
+  import {EDragEvent} from "@/core/enums/EDragEvent";
 
   export interface IGridLayoutProps {
     autoSize?: boolean;
@@ -165,6 +166,8 @@
   const colNum = toRef(props, 'colNum');
   const colNumResponsive = ref(props.colNum);
   const propsLayout = toRef(props, 'layout');
+
+  // eventbus
   const eventBus: Emitter<{
     changeDirection: boolean;
     compact: void;
@@ -183,14 +186,17 @@
   provide(`eventBus`, eventBus);
 
   const emit = defineEmits<{
-    (e: EGridLayoutEvent.LAYOUT_CREATED, layout: TLayout): void;
-    (e: EGridLayoutEvent.LAYOUT_BEFORE_MOUNT, layout: TLayout): void;
-    (e: EGridLayoutEvent.LAYOUT_MOUNTED, layout: TLayout): void;
-    (e: EGridLayoutEvent.LAYOUT_UPDATED, layout: TLayout): void;
-    (e: EGridLayoutEvent.LAYOUT_READY, layout: TLayout): void;
-    (e: EGridLayoutEvent.UPDATE_LAYOUT, layout: TLayout): void;
     (e: EGridLayoutEvent.BREAKPOINT_CHANGED, newBreakpoint: string, layout: TLayout): void;
     (e: EGridLayoutEvent.COLUMNS_CHANGED, colNum: number): void;
+    (e: EGridLayoutEvent.DRAG_END, itemId: string | number): void;
+    (e: EGridLayoutEvent.DRAG_MOVE, itemId: string | number): void;
+    (e: EGridLayoutEvent.DRAG_START, itemId: string | number): void;
+    (e: EGridLayoutEvent.LAYOUT_BEFORE_MOUNT, layout: TLayout): void;
+    (e: EGridLayoutEvent.LAYOUT_CREATED, layout: TLayout): void;
+    (e: EGridLayoutEvent.LAYOUT_MOUNTED, layout: TLayout): void;
+    (e: EGridLayoutEvent.LAYOUT_UPDATE, layout: TLayout): void;
+    (e: EGridLayoutEvent.LAYOUT_UPDATED, layout: TLayout): void;
+    (e: EGridLayoutEvent.LAYOUT_READY, layout: TLayout): void;
   }>();
   emit(EGridLayoutEvent.LAYOUT_CREATED, props.layout);
 
@@ -206,6 +212,7 @@
       height: containerHeight(),
     };
   };
+
   // finds or generates new layouts for set breakpoints
   const responsiveGridLayout = (): void => {
     const newBreakpoint = getBreakpointFromWidth(props.breakpoints, width.value as number);
@@ -244,7 +251,8 @@
     // new prop sync
     // noinspection TypeScriptValidateTypes
     originalLayout.value = layout;
-    emit(EGridLayoutEvent.UPDATE_LAYOUT, layout);
+
+    emit(EGridLayoutEvent.LAYOUT_UPDATE, layout);
 
     lastBreakpoint.value = newBreakpoint;
     eventBus.emit(`setColNum`, colsCompute);
@@ -267,8 +275,7 @@
         y: 0,
       } as ILayoutItem;
     }
-
-    if(eventName === EDragEvent.DRAG_START && !props.verticalCompact) {
+    if(eventName === 'dragstart' && !props.verticalCompact) {
       // noinspection TypeScriptValidateTypes
       positionsBeforeDrag.value = props.layout.reduce(
         (result, { i, x: tmpX, y: tmpY }) => ({
@@ -280,6 +287,22 @@
         }),
         {},
       );
+      emit(EGridLayoutEvent.DRAG_START, 1);
+    }
+
+    switch (eventName) {
+      case EDragEvent.DRAG_END: {
+        emit(EGridLayoutEvent.DRAG_END, id ?? 0);
+        break;
+      }
+      case EDragEvent.DRAG_MOVE: {
+        emit(EGridLayoutEvent.DRAG_MOVE, id ?? 0);
+        break;
+      }
+      case EDragEvent.DRAG_START: {
+        emit(EGridLayoutEvent.DRAG_START, id ?? 0);
+        break;
+      }
     }
 
     if(eventName === EDragEvent.DRAG_MOVE || eventName === EDragEvent.DRAG_START) {
@@ -306,7 +329,8 @@
           isDragging.value = false;
         });
       }
-    } else {
+    }
+    else {
       nextTick(() => {
         isDragging.value = false;
       });
@@ -314,7 +338,7 @@
 
     // Move the element to the dragged location.
     const layout = moveElement(props.layout, l, x as number, y as number, true, props.horizontalShift as boolean, props.preventCollision);
-    emit(EGridLayoutEvent.UPDATE_LAYOUT, layout);
+    emit(EGridLayoutEvent.LAYOUT_UPDATE, layout);
 
     if(props.restoreOnDrag) {
       // Do not compact items more than in layout before drag
@@ -329,9 +353,10 @@
     // needed because vue can't detect changes on array element properties
     eventBus.emit(`compact`);
     updateHeight();
-    if(eventName === EDragEvent.DRAG_END) {
+    if(eventName !== undefined && eventName === EGridLayoutEvent.DRAG_END) {
       positionsBeforeDrag.value = undefined;
       originalLayout.value = layout;
+      emit(EGridLayoutEvent.DRAG_END,1);
       emit(EGridLayoutEvent.LAYOUT_UPDATED, layout);
     }
   };
@@ -503,7 +528,7 @@
       eventBus.emit(`updateWidth`, width.value);
       updateHeight();
       originalLayout.value = props.layout;
-      emit(EGridLayoutEvent.LAYOUT_UPDATED, props.layout);
+      // emit(EGridLayoutEvent.LAYOUT_UPDATED, props.layout);
     }
   };
 
@@ -544,10 +569,8 @@
       nextTick(() => {
         initResponsiveFeatures();
 
-        onWindowResize();
-
-        // self.width = self.$el.offsetWidth;
         addWindowEventListener(`resize`, onWindowResize);
+        onWindowResize();
 
         compactLayout(props.layout, props.verticalCompact);
 
@@ -573,7 +596,7 @@
       eventBus.emit(`updateWidth`, newVal);
       if(oldVal === null) {
         /*
-          If oldval == null is when the width has never been
+          If old val == null is when the width has never been
           set before. That only occurs when mounting is
           finished, and onWindowResize has been called and
           this.width has been changed the first time after it
@@ -609,7 +632,9 @@
   });
 
   watch(() => props.colNum, val => {
+    // TODO remove eventBus
     eventBus.emit(`setColNum`, val);
+    emit(EGridLayoutEvent.COLUMNS_CHANGED, val);
     responsiveGridLayout();
   });
 
@@ -639,7 +664,7 @@
 
   watch(() => props.responsive, val => {
     if(!val) {
-      emit(EGridLayoutEvent.UPDATE_LAYOUT, originalLayout.value || []);
+      emit(EGridLayoutEvent.LAYOUT_UPDATE, originalLayout.value || []);
       eventBus.emit(`setColNum`, props.colNum);
     }
     onWindowResize();
@@ -677,38 +702,49 @@
     if(!props.rowHeight) {
       return `0`;
     }
-    return `${props.rowHeight + 10}px`;
+    return `${props.rowHeight + props.margin[1]}px`;
   });
 
 </script>
 
 <style lang="scss" scoped>
-@import "@/styles/variables";
+@import '@/styles/variables';
 
 .vue-grid-layout {
   position: relative;
   transition: height 200ms ease;
 }
 
+/*.grid::before {
+  background-image:
+    linear-gradient($grid-line-color 1px, transparent 1px),
+    linear-gradient(90deg, $grid-line-color 1px, transparent 1px);
+  background-repeat: repeat;
+  background-size: calc(calc(100% + 10px) / v-bind(colNum)) v-bind(rowHeightPx);
+  content: '';
+  height: calc(100% - 10px);
+  // margin: 5px;
+  position: absolute;
+  width: calc(100% + 10px);
+}*/
+
 .grid::before {
   content: '';
-  background-size: calc(calc(100% - 5px) / v-bind(colNum)) v-bind(rowHeightPx);
-  background-image: linear-gradient($grid-line-color 1px, transparent 1px), linear-gradient(90deg, $grid-line-color 1px, transparent 1px);
+  background-size: calc(calc(100% - 10px) / 6) 70px;
+  background-image: linear-gradient(
+          to right,
+          $grid-line-color 1px,
+          transparent 1px
+  ),
+  linear-gradient(
+          to bottom,
+          $grid-line-color 1px,
+          transparent 1px
+  );
   height: calc(100% - 5px);
-  width: calc(100% + 5px);
+  width: calc(100% - 5px);
   position: absolute;
   background-repeat: repeat;
-  margin: 5px;
-
-  //position: absolute;
-  //width: calc(100% - 5px);
-  //height: calc(100% - 5px);
-  //margin: 5px;
-  //content: '';
-  //background-image:
-  //  linear-gradient(to right,lightgrey 1px,transparent 1px),
-  //  linear-gradient(to bottom, lightgrey 1px, transparent 1px);
-  //background-repeat: repeat;
-  //background-size: calc(calc(100% - 5px) / 12) 30px;
+  margin:5px;
 }
 </style>

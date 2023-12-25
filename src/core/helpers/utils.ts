@@ -1,13 +1,18 @@
-import { TMovingDirection, EMovingDirections } from '@/core/helpers/moving-directions';
+import { TMovingDirection } from '@/core/helpers/moving-directions';
 import { ILayoutItem, TLayout } from '@/components/Grid/layout-definition';
+import {EMovingDirections} from "@/core/enums/EMovingDirections";
 
 /**
  * Get all static elements.
  * @param  {Array} layout Array of layout objects.
- * @return {Array}        Array of static layout items..
+ * @return {Array}        Array of static layout items.
+ * @throws {String}       Empty layout not allowed.
  */
 // eslint-disable-next-line no-undef
 export function getStatics(layout: TLayout): ILayoutItem[] {
+  if(layout.length === 0) {
+    throw new Error('Empty layout not allowed');
+  }
   return layout.filter(l => l.isStatic);
 }
 
@@ -62,8 +67,13 @@ export function collides(l1: ILayoutItem, l2: ILayoutItem): boolean {
  * @param  {TLayout}     layout     The entire grid layout.
  * @param  {ILayoutItem} layoutItem Layout item.
  * @return {ILayoutItem|undefined}  A colliding layout item, or undefined.
+ * @throws {Error}                  Empty layout.
  */
 export function getFirstCollision(layout: TLayout, layoutItem: ILayoutItem): ILayoutItem | undefined {
+  if(layout.length < 1) {
+    throw new Error('Empty layout');
+  }
+
   for(let i = 0, len = layout.length; i < len; i++) {
     if(collides(layout[i], layoutItem)) {
       return layout[i];

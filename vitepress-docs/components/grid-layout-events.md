@@ -1,19 +1,30 @@
 # GridLayout VUE Events
 
+
+## breakpoint-changed
+Emitted when the breakpoint is changed during a recalculation of the GridLayout.
+
+
+## changed-direction
+Emitted when the direction of the layout changes (RTL or LTR).
+
+
 ## container-resized
 
-## item-move
 
-## item-moved
+## dragend
+Emitted when a GridItem is finished dragging (GridItem is dropped into the GridLayout)
 
-## item-resize
 
-## item-resized
+## dragmove
+Emitted when a dragged GridItem is being moved.
+
+
+## dragstart
+Emitted when a GridItem starts to being dragged.
 
 
 ## layout-before-mount
-Layout beforeMount event
-
 Emitted on the component beforeMount lifecycle hook
 
 ```typescript
@@ -23,9 +34,8 @@ layoutBeforeMountEvent: function(newLayout: Layout): void {
 ```
 
 ## layout-created
-Layout created event
-
 Emitted on the component created lifecycle hook
+
 
 ```typescript
 layoutCreatedEvent: function(newLayout: Layout): void {
@@ -34,9 +44,8 @@ layoutCreatedEvent: function(newLayout: Layout): void {
 ```
 
 ## layout-mounted
-Layout mounted event
-
 Emitted on the component mounted lifecycle hook
+
 
 ```typescript
 layoutMountedEvent: function(newLayout: Layout): void {
@@ -46,8 +55,6 @@ layoutMountedEvent: function(newLayout: Layout): void {
 
 
 ## layout-ready
-Layout ready event
-
 Emitted when all the operations on the mount hook finish
 
 ```typescript
@@ -61,10 +68,10 @@ layoutReadyEvent: function(newLayout: Layout): void {
 Emitted into the event bus, maybe get this and others into separate enum.
 
 
-## update:layout(Confirm that this is correct)
-Layout updated event
+## layout-update
+Emitted every time the GridLayout is being updated.
+This will fire everytime the GridLayout is updated, the GridItems are dropped or resized in the GridLayout. 
 
-Every time the layout has finished updating and positions of all grid-items are recalculated
 
 ```typescript
 layoutUpdatedEvent: function(newLayout: Layout): void {
@@ -72,3 +79,6 @@ layoutUpdatedEvent: function(newLayout: Layout): void {
 }
 ```
 
+
+## layout-updated
+Emitted when a GridItem is dropped or finished resizing and the GridLayout is updated.

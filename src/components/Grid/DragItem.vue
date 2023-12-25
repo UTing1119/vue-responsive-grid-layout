@@ -51,7 +51,7 @@
     },
   });
 
-  const emit = defineEmits(['updateTestLayout']);
+  // const emit = defineEmits(['updateTestLayout']);
 
   const enableEditMode = toRef(prop, `enableEditMode`);
   const isDraggable = toRef(prop, `isDraggable`);
@@ -108,7 +108,7 @@
       try {
         refLayout.value.defaultGridItem.$el.style.display = "none";
       } catch(e) {
-        console.log(e);
+        console.error('refLayout error', e);
       }
       const el = mapCache.value.get("drop");
       if(!el) {
@@ -197,7 +197,6 @@
 </script>
 
 <style lang='scss' scoped>
-
 .droppable-element {
   // background: #fdd;
   border: 1px solid black;
